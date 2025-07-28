@@ -1,181 +1,190 @@
-# TCC Application Deployment
+# Implantação da Aplicação TCC
 
-This repository contains the complete infrastructure setup for deploying the TCC application stack in production with SSL certificates and secure configuration.
+Este repositório contém a configuração completa de infraestrutura para implantar a stack da aplicação TCC em produção com certificados SSL e configuração segura.
 
-## 🏗️ Architecture
+## 🏗️ Arquitetura
 
-The deployment consists of:
-- **MySQL Database** (Bitnami MySQL 8.0) - Data persistence
-- **NestJS API** (Node.js backend) - RESTful API with Swagger documentation  
-- **Angular Web App** (Frontend) - Single Page Application
-- **Nginx** (Reverse proxy) - Load balancer, SSL termination, static file serving
-- **Certbot** - Automatic SSL certificate management via Let's Encrypt
+A implantação consiste em:
 
-## 📋 Prerequisites
+- **Banco de Dados MySQL** (Bitnami MySQL 8.0) - Persistência de dados
+- **API NestJS** (Backend Node.js) - API RESTful com documentação Swagger
+- **Aplicação Web Angular** (Frontend) - Single Page Application
+- **Nginx** (Proxy reverso) - Balanceador de carga, terminação SSL, servindo arquivos estáticos
+- **Certbot** - Gerenciamento automático de certificados SSL via Let's Encrypt
 
-- Docker and Docker Compose installed
-- Domain name configured and pointing to your server (e.g., claucia.com.br)
-- Server with ports 80 and 443 accessible from the internet
+## 📋 Pré-requisitos
 
-## 🚀 Quick Start Deployment
+- Docker e Docker Compose instalados
+- Nome de domínio configurado e apontando para seu servidor (ex: claucia.com.br)
+- Servidor com portas 80 e 443 acessíveis pela internet
 
-### 1. Clone and Configure
+## 🚀 Implantação Rápida
+
+### 1. Clonar e Configurar
 
 ```bash
 git clone <your-repo-url>
 cd tcc-infra
 ```
 
-The `.env` file should already be configured with your credentials:
+O arquivo `.env` já deve estar configurado com suas credenciais:
 
 ```bash
-# Docker Hub Configuration
+# Configuração Docker Hub
 DOCKERHUB_USERNAME=eduardorfarias
 TAG=latest
 
-# Database Configuration
-MYSQL_ROOT_PASSWORD=<your-secure-password>
-MYSQL_PASSWORD=<your-secure-password>
+# Configuração do Banco de Dados
+MYSQL_ROOT_PASSWORD=<sua-senha-segura>
+MYSQL_PASSWORD=<sua-senha-segura>
 
-# API Configuration  
-JWT_SECRET=<your-super-secure-jwt-secret>
+# Configuração da API
+JWT_SECRET=<seu-jwt-secret-super-seguro>
 NODE_ENV=production
 
-# Domain Configuration
+# Configuração do Domínio
 DOMAIN=claucia.com.br
-ADMIN_EMAIL=<your-email@domain.com>
+ADMIN_EMAIL=<seu-email@dominio.com>
 ```
 
-### 2. Initial Deployment with SSL
+### 2. Implantação Inicial com SSL
 
-**For first-time deployment with SSL certificates:**
+**Para primeira implantação com certificados SSL:**
 
 ```bash
-# This script handles everything: dummy certificates, Let's Encrypt, and SSL configuration
+# Este script cuida de tudo: certificados temporários, Let's Encrypt e configuração SSL
 ./scripts/init-letsencrypt.sh
 ```
 
-The script will:
-- ✅ Download TLS security parameters
-- ✅ Create dummy SSL certificates to allow nginx to start
-- ✅ Start all services (MySQL, API, Nginx) 
-- ✅ Request real Let's Encrypt certificates
-- ✅ Enable SSL configuration and reload nginx
-- ⚠️ **Note**: Auto-renewal setup is separate (see SSL Certificate Management section)
+O script irá:
 
-### 3. Regular Deployments
+- ✅ Baixar parâmetros de segurança TLS
+- ✅ Criar certificados SSL temporários para permitir que o nginx inicie
+- ✅ Iniciar todos os serviços (MySQL, API, Nginx)
+- ✅ Solicitar certificados reais do Let's Encrypt
+- ✅ Habilitar configuração SSL e recarregar nginx
+- ⚠️ **Nota**: Configuração de renovação automática é separada (veja seção Gerenciamento de Certificados SSL)
 
-**For subsequent deployments (after SSL is already set up):**
+### 3. Implantações Regulares
+
+**Para implantações subsequentes (após SSL já configurado):**
 
 ```bash
-# Simple deployment script for updates
+# Script simples de implantação para atualizações
 ./scripts/deploy.sh
 ```
 
-## 🔧 Development Workflow
+## 🔧 Fluxo de Desenvolvimento
 
-### Windows Development (Build & Push Images)
+### Desenvolvimento Windows (Build & Push de Imagens)
 
-**When to build and push:**
-- ✅ After Angular frontend changes
-- ✅ After NestJS API changes  
-- ✅ After nginx configuration changes
-- ❌ Not needed for infrastructure-only changes
+**Quando fazer build e push:**
 
-**How to build and push:**
+- ✅ Após mudanças no frontend Angular
+- ✅ Após mudanças na API NestJS
+- ✅ Após mudanças na configuração nginx
+- ❌ Não necessário apenas para mudanças de infraestrutura
+
+**Como fazer build e push:**
 
 **Windows (PowerShell):**
+
 ```powershell
-# Simple build and push (latest tag)
+# Build e push simples (tag latest)
 .\scripts\build-and-push.ps1
 
-# With specific version tag
+# Com tag de versão específica
 .\scripts\build-and-push.ps1 -Tag v1.2.0
 ```
 
 **Linux (Bash):**
+
 ```bash
-# Simple build and push (latest tag)
+# Build e push simples (tag latest)
 ./scripts/build-and-push.sh
 
-# With specific version tag
+# Com tag de versão específica
 ./scripts/build-and-push.sh --tag v1.2.0
 ```
 
-**What it does:**
-1. 🔨 Builds tcc-web (Angular frontend)
-2. 🔨 Builds tcc-api (NestJS backend)  
-3. 🔨 Builds tcc-nginx (with updated config paths)
-4. 📤 Pushes all images to Docker Hub
+**O que faz:**
 
-### Linux Deployment
+1. 🔨 Faz build do tcc-web (frontend Angular)
+2. 🔨 Faz build do tcc-api (backend NestJS)
+3. 🔨 Faz build do tcc-nginx (com caminhos de config atualizados)
+4. 📤 Envia todas as imagens para Docker Hub
+
+### Implantação Linux
 
 ```bash
-# Pull latest images and deploy
+# Puxa imagens mais recentes e implanta
 ./scripts/deploy.sh
 
-# Or manually:
+# Ou manualmente:
 docker compose pull
 docker compose up -d
 ```
 
-## 🌐 Service URLs
+## 🌐 URLs dos Serviços
 
-After successful deployment, your application will be available at:
+Após implantação bem-sucedida, sua aplicação estará disponível em:
 
-- **🔒 HTTPS Frontend**: https://claucia.com.br
-- **🔒 HTTPS API**: https://claucia.com.br/api
-- **🔒 API Documentation**: https://claucia.com.br/api/docs
-- **📁 File Uploads**: https://claucia.com.br/uploads
+- **🔒 Frontend HTTPS**: https://claucia.com.br
+- **🔒 API HTTPS**: https://claucia.com.br/api
+- **🔒 Documentação da API**: https://claucia.com.br/api/docs
+- **📁 Upload de Arquivos**: https://claucia.com.br/uploads
 - **💚 Health Check**: https://claucia.com.br/health
 
-*HTTP requests automatically redirect to HTTPS*
+_Requisições HTTP redirecionam automaticamente para HTTPS_
 
-## 🗄️ Database Access
+## 🗄️ Acesso ao Banco de Dados
 
-### For DBeaver/External Database Tools
+### Para DBeaver/Ferramentas de Banco Externas
 
-The MySQL database is exposed on port 3306 for debugging:
+O banco MySQL está exposto na porta 3306 para debug:
 
-**Connection Settings:**
+**Configurações de Conexão:**
+
 - **Host:** `claucia.com.br`
-- **Port:** `3306`
-- **Database:** `claucia`
-- **Username:** `claucia`
-- **Password:** `<from .env file>`
+- **Porta:** `3306`
+- **Banco:** `claucia`
+- **Usuário:** `claucia`
+- **Senha:** `<do arquivo .env>`
 
-**Root Access:**
-- **Username:** `root`
-- **Password:** `<MYSQL_ROOT_PASSWORD from .env>`
+**Acesso Root:**
 
-**🔒 Security:** Port 3306 is protected by IP-based firewall rules (whitelist only).
+- **Usuário:** `root`
+- **Senha:** `<MYSQL_ROOT_PASSWORD do .env>`
 
-### Firewall Security
+**🔒 Segurança:** Porta 3306 é protegida por regras de firewall baseadas em IP (apenas lista de permitidos).
 
-The database port 3306 is protected by IP-based firewall rules:
-- Only whitelisted IPs can access MySQL
-- SSH access (port 22) is also IP-restricted
-- HTTP/HTTPS (ports 80/443) are open for public web access
+### Segurança do Firewall
 
-To modify database access, update your firewall whitelist rather than changing the Docker configuration.
+A porta 3306 do banco é protegida por regras de firewall baseadas em IP:
 
-## 🔐 SSL Certificate Management
+- Apenas IPs na lista de permitidos podem acessar MySQL
+- Acesso SSH (porta 22) também é restrito por IP
+- HTTP/HTTPS (portas 80/443) estão abertas para acesso web público
 
-### Automatic Renewal Setup
+Para modificar acesso ao banco, atualize sua lista de IPs permitidos no firewall ao invés de alterar a configuração Docker.
 
-**🔍 Check if auto-renewal is already configured:**
+## 🔐 Gerenciamento de Certificados SSL
+
+### Configuração de Renovação Automática
+
+**🔍 Verificar se a renovação automática já está configurada:**
 
 ```bash
-# Check if systemd timer exists and is active
+# Verificar se o timer systemd existe e está ativo
 systemctl status tcc-ssl-renewal.timer
 ```
 
-If the timer is **active**, you're all set! If not, or if this is a fresh server, set it up:
+Se o timer estiver **ativo**, está tudo pronto! Caso contrário, ou se for um servidor novo, configure:
 
-**⚙️ Set up automatic renewal (one-time setup per server):**
+**⚙️ Configurar renovação automática (configuração única por servidor):**
 
 ```bash
-# Create systemd service
+# Criar serviço systemd
 cat > /etc/systemd/system/tcc-ssl-renewal.service << 'EOF'
 [Unit]
 Description=TCC SSL Certificate Renewal
@@ -189,7 +198,7 @@ ExecStart=/bin/bash -c 'cd /opt/tcc-infra && docker compose run --rm certbot ren
 User=root
 EOF
 
-# Create systemd timer
+# Criar timer systemd
 cat > /etc/systemd/system/tcc-ssl-renewal.timer << 'EOF'
 [Unit]
 Description=TCC SSL Certificate Renewal Timer
@@ -204,203 +213,209 @@ Persistent=true
 WantedBy=timers.target
 EOF
 
-# Enable and start the timer
+# Habilitar e iniciar o timer
 systemctl daemon-reload
 systemctl enable tcc-ssl-renewal.timer
 systemctl start tcc-ssl-renewal.timer
 ```
 
-**📅 Monitoring auto-renewal:**
+**📅 Monitorando renovação automática:**
 
 ```bash
-# Check timer status
+# Verificar status do timer
 systemctl status tcc-ssl-renewal.timer
 
-# Check next scheduled run
+# Verificar próxima execução agendada
 systemctl list-timers tcc-ssl-renewal.timer
 
-# View renewal logs
+# Ver logs de renovação
 journalctl -u tcc-ssl-renewal.service
 
-# Test renewal manually
+# Testar renovação manualmente
 systemctl start tcc-ssl-renewal.service
 ```
 
-### When Auto-Renewal Setup is Needed
+### Quando Configuração de Renovação Automática é Necessária
 
-✅ **Persists through regular deployments** - `./scripts/deploy.sh`  
-✅ **Persists through container recreations** - `docker compose up -d`  
-✅ **Persists through Docker restarts**  
-❌ **Need to set up again on new server**  
-❌ **Need to set up again after OS reinstall**  
+✅ **Persiste através de implantações regulares** - `./scripts/deploy.sh`
+✅ **Persiste através de recriações de container** - `docker compose up -d`
+✅ **Persiste através de reinicializações do Docker**
+❌ **Precisa configurar novamente em servidor novo**
+❌ **Precisa configurar novamente após reinstalação do SO**
 
-### Manual Certificate Renewal
+### Renovação Manual de Certificados
 
 ```bash
 docker compose run --rm certbot renew
 docker compose exec nginx nginx -s reload
 ```
 
-## 📊 Monitoring & Management
+## 📊 Monitoramento & Gerenciamento
 
-### Check Service Status
+### Verificar Status dos Serviços
 
 ```bash
-# View all containers
+# Ver todos os containers
 docker compose ps
 
-# Check logs
-docker compose logs -f          # All services
-docker compose logs -f nginx    # Specific service
+# Verificar logs
+docker compose logs -f          # Todos os serviços
+docker compose logs -f nginx    # Serviço específico
 docker compose logs -f api
 docker compose logs -f mysql
 ```
 
 ### Health Checks
 
-- **API Health**: `curl https://claucia.com.br/health`
-- **Database**: All services include health checks
-- **SSL Certificate**: Browser will show green lock icon
+- **Health da API**: `curl https://claucia.com.br/health`
+- **Banco de Dados**: Todos os serviços incluem health checks
+- **Certificado SSL**: Navegador mostrará ícone de cadeado verde
 
-## 🛠️ Troubleshooting
+## 🛠️ Solução de Problemas
 
-### Common Issues & Solutions
+### Problemas Comuns & Soluções
 
-1. **SSL Certificate Errors**
+1. **Erros de Certificado SSL**
+
    ```bash
-   # Check certificate status
+   # Verificar status do certificado
    docker compose logs certbot
-   
-   # Restart SSL setup
+
+   # Reiniciar configuração SSL
    ./init-letsencrypt.sh
    ```
 
-2. **Nginx Not Starting**
+2. **Nginx Não Iniciando**
+
    ```bash
-   # Check nginx logs
+   # Verificar logs do nginx
    docker compose logs nginx
-   
-   # Verify configuration
+
+   # Verificar configuração
    docker compose exec nginx nginx -t
    ```
 
-3. **API Documentation (Swagger) Not Loading**
-   - Fixed in current configuration with `location ^~ /api/` priority
-   - Swagger assets now properly proxy to API instead of serving as static files
+3. **Documentação da API (Swagger) Não Carregando**
 
-4. **Angular App Shows Nginx Default Page**
-   - Fixed in current configuration with `root /app/browser;`
-   - Nginx now serves Angular app from correct directory
+   - Corrigido na configuração atual com prioridade `location ^~ /api/`
+   - Assets do Swagger agora fazem proxy corretamente para API ao invés de servir como arquivos estáticos
 
-### Debug Commands
+4. **App Angular Mostra Página Padrão do Nginx**
+   - Corrigido na configuração atual com `root /app/browser;`
+   - Nginx agora serve app Angular do diretório correto
+
+### Comandos de Debug
 
 ```bash
-# Inspect running containers
+# Inspecionar containers em execução
 docker compose exec nginx sh
 docker compose exec api sh
 docker compose exec mysql mysql -u claucia -p
 
-# Check network connectivity
+# Verificar conectividade de rede
 docker network inspect tcc-infra_tcc-network
 
-# Test SSL certificates
+# Testar certificados SSL
 openssl s_client -connect claucia.com.br:443 -servername claucia.com.br
 ```
 
-## 💾 Backup & Recovery
+## 💾 Backup & Recuperação
 
-### Database Backup
+### Backup do Banco de Dados
 
 ```bash
-# Create backup
+# Criar backup
 docker compose exec mysql mysqldump -u claucia -p claucia > backup-$(date +%Y%m%d).sql
 
-# Restore backup
+# Restaurar backup
 docker compose exec -T mysql mysql -u claucia -p claucia < backup-20240101.sql
 ```
 
-### File Uploads Backup
+### Backup de Uploads de Arquivos
 
 ```bash
-# Backup uploads volume
+# Backup do volume de uploads
 docker run --rm -v tcc-infra_uploads_data:/data -v $(pwd):/backup alpine tar czf /backup/uploads-backup-$(date +%Y%m%d).tar.gz -C /data .
 
-# Restore uploads
+# Restaurar uploads
 docker run --rm -v tcc-infra_uploads_data:/data -v $(pwd):/backup alpine tar xzf /backup/uploads-backup-20240101.tar.gz -C /data
 ```
 
-## 🔒 Security Features
+## 🔒 Recursos de Segurança
 
-- ✅ **HTTPS Only** - All traffic encrypted with Let's Encrypt certificates
-- ✅ **Security Headers** - HSTS, CSP, X-Frame-Options, etc.
-- ✅ **Database Security** - Internal network isolation + strong passwords + IP-based firewall
-- ✅ **SSH Protection** - IP whitelist access only
-- ✅ **API Protection** - CORS, rate limiting, input validation
-- ✅ **File Upload Security** - Secure file handling and serving
+- ✅ **Apenas HTTPS** - Todo tráfego criptografado com certificados Let's Encrypt
+- ✅ **Headers de Segurança** - HSTS, CSP, X-Frame-Options, etc.
+- ✅ **Segurança do Banco** - Isolamento de rede interna + senhas fortes + firewall baseado em IP
+- ✅ **Proteção SSH** - Acesso apenas por lista de IPs permitidos
+- ✅ **Proteção da API** - CORS, limitação de taxa, validação de entrada
+- ✅ **Segurança de Upload** - Manipulação e servimento seguro de arquivos
 
-## 📁 Repository Structure
+## 📁 Estrutura do Repositório
 
 ```
 tcc-infra/
-├── README.md               # 📖 Main documentation
-├── docker-compose.yml      # 🐳 Main orchestration file
-├── .env                    # ⚙️  Environment variables
-├── .env.example            # 📝 Environment template
-├── .gitignore              # 🚫 Git ignore rules
-├── scripts/                # 📜 Deployment scripts
-│   ├── deploy.sh           #   └── Linux deployment
-│   ├── init-letsencrypt.sh #   └── Linux SSL setup
-│   ├── build-and-push.ps1  #   └── Windows build & push
-│   └── build-and-push.sh   #   └── Linux build & push
-├── config/                 # ⚙️  Configuration files
-│   ├── Dockerfile          #   └── Nginx image definition
-│   └── nginx/              #   └── Nginx configurations
-│       ├── nginx.conf      #       ├── HTTP config (port 80)
-│       └── nginx-ssl.conf  #       └── HTTPS config (port 443)
-└── certbot/                # 🔒 SSL certificates (auto-generated)
-    ├── conf/               #   └── Certificate files
-    └── www/                #   └── ACME challenge files
+├── README.md               # 📖 Documentação principal
+├── docker-compose.yml      # 🐳 Arquivo principal de orquestração
+├── .env                    # ⚙️  Variáveis de ambiente
+├── .env.example            # 📝 Template de ambiente
+├── .gitignore              # 🚫 Regras do git ignore
+├── scripts/                # 📜 Scripts de implantação
+│   ├── deploy.sh           #   └── Implantação Linux
+│   ├── init-letsencrypt.sh #   └── Configuração SSL Linux
+│   ├── build-and-push.ps1  #   └── Build & push Windows
+│   └── build-and-push.sh   #   └── Build & push Linux
+├── config/                 # ⚙️  Arquivos de configuração
+│   ├── Dockerfile          #   └── Definição da imagem Nginx
+│   └── nginx/              #   └── Configurações Nginx
+│       ├── nginx.conf      #       ├── Config HTTP (porta 80)
+│       └── nginx-ssl.conf  #       └── Config HTTPS (porta 443)
+└── certbot/                # 🔒 Certificados SSL (auto-gerados)
+    ├── conf/               #   └── Arquivos de certificado
+    └── www/                #   └── Arquivos de desafio ACME
 ```
 
-## 🚦 Deployment Workflow
+## 🚦 Fluxo de Implantação
 
-### **Development Cycle:**
-1. **💻 Development (Windows or Linux)**:
-   - Make code changes (Angular/NestJS/nginx configs)
+### **Ciclo de Desenvolvimento:**
+
+1. **💻 Desenvolvimento (Windows ou Linux)**:
+
+   - Fazer mudanças no código (Angular/NestJS/configs nginx)
    - **Windows**: `.\scripts\build-and-push.ps1`
    - **Linux**: `./scripts/build-and-push.sh`
-   - Images pushed to Docker Hub
+   - Imagens enviadas para Docker Hub
 
-2. **🚀 Linux Production Deployment**:
-   - **First time**: `./scripts/init-letsencrypt.sh` (SSL setup)
-   - **Updates**: `./scripts/deploy.sh` (pulls latest images)
-   - Automatically pulls latest Docker images
+2. **🚀 Implantação em Produção Linux**:
 
-3. **📊 Monitoring & Maintenance**:
-   - Check logs: `docker compose logs -f`
-   - Health endpoints: `https://claucia.com.br/health`
-   - Database access: DBeaver with provided credentials
-   - **One-time**: Set up SSL auto-renewal (see SSL Certificate Management)
+   - **Primeira vez**: `./scripts/init-letsencrypt.sh` (configuração SSL)
+   - **Atualizações**: `./scripts/deploy.sh` (puxa imagens mais recentes)
+   - Automaticamente puxa imagens Docker mais recentes
 
-## 📝 Version History
+3. **📊 Monitoramento & Manutenção**:
+   - Verificar logs: `docker compose logs -f`
+   - Endpoints de health: `https://claucia.com.br/health`
+   - Acesso ao banco: DBeaver com credenciais fornecidas
+   - **Uma vez**: Configurar renovação automática SSL (veja Gerenciamento de Certificados SSL)
 
-- **v2.0** - SSL automation, nginx fixes, database access, comprehensive documentation
-- **v1.0** - Initial Docker deployment setup
+## 📝 Histórico de Versões
+
+- **v2.0** - Automação SSL, correções nginx, acesso ao banco, documentação abrangente
+- **v1.0** - Configuração inicial de implantação Docker
 
 ---
 
-**🎯 Result**: Production-ready TCC application with automatic SSL, secure database access, and comprehensive monitoring at https://claucia.com.br**
+**🎯 Resultado**: Aplicação TCC pronta para produção com SSL automático, acesso seguro ao banco e monitoramento abrangente em https://claucia.com.br**
 
-## 🚀 Quick Commands Reference
+## 🚀 Referência de Comandos Rápidos
 
 ```bash
-# First-time SSL setup (Linux)
+# Configuração SSL primeira vez (Linux)
 ./scripts/init-letsencrypt.sh
 
-# Regular deployment (Linux)  
+# Implantação regular (Linux)
 ./scripts/deploy.sh
 
-# Build and push (Windows/Linux)
+# Build e push (Windows/Linux)
 .\scripts\build-and-push.ps1    # Windows
 ./scripts/build-and-push.sh     # Linux
 ```
