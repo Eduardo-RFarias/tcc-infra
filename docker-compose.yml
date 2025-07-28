@@ -60,9 +60,7 @@ services:
 
   # Nginx Reverse Proxy & Web Server
   nginx:
-    build:
-      context: .
-      dockerfile: config/Dockerfile
+    image: ${DOCKERHUB_USERNAME}/tcc-nginx:${TAG:-latest}
     container_name: tcc-nginx
     restart: unless-stopped
     ports:

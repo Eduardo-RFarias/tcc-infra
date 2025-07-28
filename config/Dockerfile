@@ -2,10 +2,8 @@
 FROM bitnami/nginx:latest
 
 # Copy nginx configurations
-# Initially only copy HTTP configuration as default
-COPY config/nginx/nginx.conf /opt/bitnami/nginx/conf/server_blocks/default.conf
-# Copy SSL config with different name so it's available but not loaded automatically
-COPY config/nginx/nginx-ssl.conf /opt/bitnami/nginx/conf/server_blocks/ssl.conf.template
+# Use SSL configuration as the primary config
+COPY config/nginx/nginx-ssl.conf /opt/bitnami/nginx/conf/server_blocks/ssl.conf
 
 # Copy Angular build files from published image
 COPY --from=eduardorfarias/tcc-web:latest /app/dist/claucia-web /app
@@ -16,5 +14,5 @@ RUN mkdir -p /app/uploads
 RUN chown -R 1001:1001 /app
 USER 1001
 
-# Expose port 8080 (default for Bitnami nginx)
-EXPOSE 8080 
+# Expose ports 8080 (HTTP) and 8443 (HTTPS)
+EXPOSE 8080 8443 
