@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: bitnami/mysql:8.0
+    container_name: tcc-mysql
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=claucia
+      - MYSQL_USER=claucia
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/bitnami/mysql/data
+    networks:
+      - tcc-network
+    healthcheck:
+      test: ['CMD', '/opt/bitnami/mysql/bin/mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p$$MYSQL_ROOT_PASSWORD']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # NestJS API
+  api:
+    image: ${DOCKERHUB_USERNAME}/tcc-api:${TAG:-latest}
+    container_name: tcc-api
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - MYSQL_USERNAME=claucia
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=claucia
+      - JWT_SECRET=${JWT_SECRET}
+    volumes:
+      - uploads_data:/app/uploads
+    networks:
+      - tcc-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Certbot for SSL certificates
+  certbot:
+    image: certbot/certbot:latest
+    container_name: tcc-certbot
+    volumes:
+      - certbot_data:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email ${ADMIN_EMAIL} --agree-tos --no-eff-email -d ${DOMAIN} -d www.${DOMAIN}
+    depends_on:
+      - nginx
+
+  # Nginx Reverse Proxy & Web Server
+  nginx:
+    image: ${DOCKERHUB_USERNAME}/tcc-nginx:${TAG:-latest}
+    container_name: tcc-nginx
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+      - "443:8443"
+    volumes:
+      - uploads_data:/app/uploads:ro
+      - certbot_data:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
+    networks:
+      - tcc-network
+    depends_on:
+      - api
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  tcc-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  uploads_data:
+    driver: local
+  certbot_data:
+    driver: local
+  certbot_www:
+    driver: local 
