@@ -9,11 +9,11 @@ echo "🚀 Deploying TCC Application..."
 
 # Pull latest images
 echo "📥 Pulling latest images from Docker Hub..."
-docker-compose pull
+docker compose pull
 
 # Start services
 echo "📦 Starting all services..."
-docker-compose --env-file .env up -d
+docker compose --env-file .env up -d
 
 echo "✅ Deployment complete!"
 echo ""

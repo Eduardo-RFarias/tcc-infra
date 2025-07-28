@@ -32,4 +32,4 @@ docker push "$DOCKERHUB_USERNAME/tcc-nginx:$Tag"
 Write-Host "`nAll images pushed successfully!" -ForegroundColor Green
 Write-Host ""
 Write-Host "To deploy:" -ForegroundColor Yellow
-Write-Host "docker-compose --env-file .env up -d" -ForegroundColor White 
+Write-Host "docker compose --env-file .env up -d" -ForegroundColor White 

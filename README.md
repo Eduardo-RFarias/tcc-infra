@@ -66,23 +66,23 @@ cp env.example .env
 # Edit .env with your secure values
 
 # Deploy using Docker Hub images
-docker-compose --env-file .env up -d
+docker compose --env-file .env up -d
 ```
 
 ### Management
 
 ```bash
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Stop services
-docker-compose down
+docker compose down
 
 # Stop and remove volumes (WARNING: This will delete all data)
-docker-compose down -v
+docker compose down -v
 
 # Update to latest images
-docker-compose pull && docker-compose up -d
+docker compose pull && docker compose up -d
 ```
 
 ## Service URLs
@@ -127,13 +127,13 @@ If you prefer manual setup:
 1. **Start services without SSL first:**
 
 ```bash
-docker-compose up -d mysql api nginx
+docker compose up -d mysql api nginx
 ```
 
 2. **Request certificates:**
 
 ```bash
-docker-compose run --rm certbot certonly \
+docker compose run --rm certbot certonly \
     --webroot \
     --webroot-path=/var/www/certbot \
     --email your-email@example.com \
@@ -146,8 +146,8 @@ docker-compose run --rm certbot certonly \
 3. **Enable SSL configuration:**
 
 ```bash
-docker-compose exec nginx cp /opt/bitnami/nginx/conf/server_blocks/ssl.conf /opt/bitnami/nginx/conf/server_blocks/default.conf
-docker-compose exec nginx nginx -s reload
+docker compose exec nginx cp /opt/bitnami/nginx/conf/server_blocks/ssl.conf /opt/bitnami/nginx/conf/server_blocks/default.conf
+docker compose exec nginx nginx -s reload
 ```
 
 ### Certificate Renewal
@@ -174,12 +174,12 @@ View service logs:
 
 ```bash
 # All services
-docker-compose logs -f
+docker compose logs -f
 
 # Specific service
-docker-compose logs -f api
-docker-compose logs -f nginx
-docker-compose logs -f mysql
+docker compose logs -f api
+docker compose logs -f nginx
+docker compose logs -f mysql
 ```
 
 ## Backup
@@ -188,10 +188,10 @@ docker-compose logs -f mysql
 
 ```bash
 # Create backup
-docker-compose exec mysql mysqldump -u claucia -p claucia > backup.sql
+docker compose exec mysql mysqldump -u claucia -p claucia > backup.sql
 
 # Restore backup
-docker-compose exec -T mysql mysql -u claucia -p claucia < backup.sql
+docker compose exec -T mysql mysql -u claucia -p claucia < backup.sql
 ```
 
 ### Uploads Backup
@@ -208,7 +208,7 @@ docker run --rm -v tcc-infra_uploads_data:/data -v $(pwd):/backup alpine tar xzf
 
 ### Common Issues
 
-1. **Port conflicts**: Change the port mapping in docker-compose.yml
+1. **Port conflicts**: Change the port mapping in docker compose.yml
 2. **Permission issues**: Check file permissions and Docker user
 3. **Database connection**: Verify environment variables and network connectivity
 
@@ -216,11 +216,11 @@ docker run --rm -v tcc-infra_uploads_data:/data -v $(pwd):/backup alpine tar xzf
 
 ```bash
 # Check running containers
-docker-compose ps
+docker compose ps
 
 # Inspect service
-docker-compose exec api sh
-docker-compose exec nginx sh
+docker compose exec api sh
+docker compose exec nginx sh
 
 # Check networks
 docker network ls
