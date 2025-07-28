@@ -52,7 +52,7 @@ ADMIN_EMAIL=<your-email@domain.com>
 
 ```bash
 # This script handles everything: dummy certificates, Let's Encrypt, and SSL configuration
-./init-letsencrypt.sh
+./scripts/init-letsencrypt.sh
 ```
 
 The script will:
@@ -69,26 +69,50 @@ The script will:
 
 ```bash
 # Simple deployment script for updates
-./deploy.sh
+./scripts/deploy.sh
 ```
 
 ## 🔧 Development Workflow
 
 ### Windows Development (Build & Push Images)
 
+**When to build and push:**
+- ✅ After Angular frontend changes
+- ✅ After NestJS API changes  
+- ✅ After nginx configuration changes
+- ❌ Not needed for infrastructure-only changes
+
+**How to build and push:**
+
+**Windows (PowerShell):**
 ```powershell
-# Build and push all images to Docker Hub
-.\build-and-push.ps1
+# Simple build and push (latest tag)
+.\scripts\build-and-push.ps1
 
 # With specific version tag
-.\build-and-push.ps1 v1.0.0
+.\scripts\build-and-push.ps1 -Tag v1.2.0
 ```
+
+**Linux (Bash):**
+```bash
+# Simple build and push (latest tag)
+./scripts/build-and-push.sh
+
+# With specific version tag
+./scripts/build-and-push.sh --tag v1.2.0
+```
+
+**What it does:**
+1. 🔨 Builds tcc-web (Angular frontend)
+2. 🔨 Builds tcc-api (NestJS backend)  
+3. 🔨 Builds tcc-nginx (with updated config paths)
+4. 📤 Pushes all images to Docker Hub
 
 ### Linux Deployment
 
 ```bash
 # Pull latest images and deploy
-./deploy.sh
+./scripts/deploy.sh
 
 # Or manually:
 docker compose pull
@@ -254,27 +278,44 @@ docker run --rm -v tcc-infra_uploads_data:/data -v $(pwd):/backup alpine tar xzf
 
 ```
 tcc-infra/
-├── build-and-push.ps1      # Windows: Build & push Docker images
-├── deploy.sh               # Linux: Regular deployment script  
-├── init-letsencrypt.sh     # SSL setup script (first time only)
-├── docker-compose.yml      # Main orchestration file
-├── Dockerfile              # Nginx image definition
-├── nginx.conf              # HTTP configuration (port 80)
-├── nginx-ssl.conf          # HTTPS configuration (port 443)
-├── .env                    # Environment variables
-├── .env.example            # Template for environment variables
-├── README.md               # This documentation
-└── certbot/                # SSL certificates (auto-generated)
-    ├── conf/               # Certificate files
-    └── www/                # ACME challenge files
+├── README.md               # 📖 Main documentation
+├── docker-compose.yml      # 🐳 Main orchestration file
+├── .env                    # ⚙️  Environment variables
+├── .env.example            # 📝 Environment template
+├── .gitignore              # 🚫 Git ignore rules
+├── scripts/                # 📜 Deployment scripts
+│   ├── deploy.sh           #   └── Linux deployment
+│   ├── init-letsencrypt.sh #   └── Linux SSL setup
+│   ├── build-and-push.ps1  #   └── Windows build & push
+│   └── build-and-push.sh   #   └── Linux build & push
+├── config/                 # ⚙️  Configuration files
+│   ├── Dockerfile          #   └── Nginx image definition
+│   └── nginx/              #   └── Nginx configurations
+│       ├── nginx.conf      #       ├── HTTP config (port 80)
+│       └── nginx-ssl.conf  #       └── HTTPS config (port 443)
+└── certbot/                # 🔒 SSL certificates (auto-generated)
+    ├── conf/               #   └── Certificate files
+    └── www/                #   └── ACME challenge files
 ```
 
 ## 🚦 Deployment Workflow
 
-1. **Development (Windows)**: Code → `build-and-push.ps1` → Docker Hub
-2. **Production (Linux)**: `./init-letsencrypt.sh` (first time) or `./deploy.sh` (updates)
-3. **Monitoring**: Check logs and health endpoints
-4. **Database Access**: Use DBeaver with provided credentials (temporarily)
+### **Development Cycle:**
+1. **💻 Development (Windows or Linux)**:
+   - Make code changes (Angular/NestJS/nginx configs)
+   - **Windows**: `.\scripts\build-and-push.ps1`
+   - **Linux**: `./scripts/build-and-push.sh`
+   - Images pushed to Docker Hub
+
+2. **🚀 Linux Production Deployment**:
+   - **First time**: `./scripts/init-letsencrypt.sh` (SSL setup)
+   - **Updates**: `./scripts/deploy.sh` (pulls latest images)
+   - Automatically pulls latest Docker images
+
+3. **📊 Monitoring & Maintenance**:
+   - Check logs: `docker compose logs -f`
+   - Health endpoints: `https://claucia.com.br/health`
+   - Database access: DBeaver with provided credentials
 
 ## 📝 Version History
 
@@ -284,3 +325,17 @@ tcc-infra/
 ---
 
 **🎯 Result**: Production-ready TCC application with automatic SSL, secure database access, and comprehensive monitoring at https://claucia.com.br**
+
+## 🚀 Quick Commands Reference
+
+```bash
+# First-time SSL setup (Linux)
+./scripts/init-letsencrypt.sh
+
+# Regular deployment (Linux)  
+./scripts/deploy.sh
+
+# Build and push (Windows/Linux)
+.\scripts\build-and-push.ps1    # Windows
+./scripts/build-and-push.sh     # Linux
+```

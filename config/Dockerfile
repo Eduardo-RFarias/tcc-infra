@@ -3,9 +3,9 @@ FROM bitnami/nginx:latest
 
 # Copy nginx configurations
 # Initially only copy HTTP configuration as default
-COPY nginx.conf /opt/bitnami/nginx/conf/server_blocks/default.conf
+COPY config/nginx/nginx.conf /opt/bitnami/nginx/conf/server_blocks/default.conf
 # Copy SSL config with different name so it's available but not loaded automatically
-COPY nginx-ssl.conf /opt/bitnami/nginx/conf/server_blocks/ssl.conf.template
+COPY config/nginx/nginx-ssl.conf /opt/bitnami/nginx/conf/server_blocks/ssl.conf.template
 
 # Copy Angular build files from published image
 COPY --from=eduardorfarias/tcc-web:latest /app/dist/claucia-web /app
