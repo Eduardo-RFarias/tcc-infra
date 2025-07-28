@@ -61,7 +61,7 @@ The script will:
 - ✅ Start all services (MySQL, API, Nginx) 
 - ✅ Request real Let's Encrypt certificates
 - ✅ Enable SSL configuration and reload nginx
-- ✅ Set up automatic certificate renewal
+- ⚠️ **Note**: Auto-renewal setup is separate (see SSL Certificate Management section)
 
 ### 3. Regular Deployments
 
@@ -161,14 +161,78 @@ To modify database access, update your firewall whitelist rather than changing t
 
 ## 🔐 SSL Certificate Management
 
-### Automatic Renewal
+### Automatic Renewal Setup
 
-Certificates automatically renew. To set up cron job for renewal:
+**🔍 Check if auto-renewal is already configured:**
 
 ```bash
-# Add to crontab (crontab -e):
-0 12 * * * cd /opt/tcc-infra && docker compose run --rm certbot renew && docker compose exec nginx nginx -s reload
+# Check if systemd timer exists and is active
+systemctl status tcc-ssl-renewal.timer
 ```
+
+If the timer is **active**, you're all set! If not, or if this is a fresh server, set it up:
+
+**⚙️ Set up automatic renewal (one-time setup per server):**
+
+```bash
+# Create systemd service
+cat > /etc/systemd/system/tcc-ssl-renewal.service << 'EOF'
+[Unit]
+Description=TCC SSL Certificate Renewal
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/tcc-infra
+ExecStart=/bin/bash -c 'cd /opt/tcc-infra && docker compose run --rm certbot renew && docker compose exec nginx nginx -s reload'
+User=root
+EOF
+
+# Create systemd timer
+cat > /etc/systemd/system/tcc-ssl-renewal.timer << 'EOF'
+[Unit]
+Description=TCC SSL Certificate Renewal Timer
+Requires=tcc-ssl-renewal.service
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=3600
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+
+# Enable and start the timer
+systemctl daemon-reload
+systemctl enable tcc-ssl-renewal.timer
+systemctl start tcc-ssl-renewal.timer
+```
+
+**📅 Monitoring auto-renewal:**
+
+```bash
+# Check timer status
+systemctl status tcc-ssl-renewal.timer
+
+# Check next scheduled run
+systemctl list-timers tcc-ssl-renewal.timer
+
+# View renewal logs
+journalctl -u tcc-ssl-renewal.service
+
+# Test renewal manually
+systemctl start tcc-ssl-renewal.service
+```
+
+### When Auto-Renewal Setup is Needed
+
+✅ **Persists through regular deployments** - `./scripts/deploy.sh`  
+✅ **Persists through container recreations** - `docker compose up -d`  
+✅ **Persists through Docker restarts**  
+❌ **Need to set up again on new server**  
+❌ **Need to set up again after OS reinstall**  
 
 ### Manual Certificate Renewal
 
@@ -316,6 +380,7 @@ tcc-infra/
    - Check logs: `docker compose logs -f`
    - Health endpoints: `https://claucia.com.br/health`
    - Database access: DBeaver with provided credentials
+   - **One-time**: Set up SSL auto-renewal (see SSL Certificate Management)
 
 ## 📝 Version History
 
