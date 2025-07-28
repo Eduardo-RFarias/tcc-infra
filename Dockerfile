@@ -1,4 +1,4 @@
-# Nginx server with Angular app from Docker Hub
+# Production stage with Bitnami nginx
 FROM bitnami/nginx:latest
 
 # Copy nginx configurations
